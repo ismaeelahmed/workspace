@@ -17,28 +17,41 @@ double prob() {
 	return (static_cast<double>(rand()) / RAND_MAX);
 }
 
-Graph::Graph(int size)
+//constructor with size and
+Graph::Graph(int sz)
 {
+	size=sz;			//graph size
 
+	//Adjacency matrix used to represent Graph
+	//Adjacency list can also be used in that case we need to implement it using linked list
+
+	graph= new bool*[size];	//pointer array pointing to all nodes in Graph with 'graph' as base pointer
+	cost= new int*[size];	//pointer array pointing to weight of edges thus graph
+	for(int j=0;j<size;j++)
+	{
+		graph[j]=new bool[size];	//allocate memory for Graph array
+		cost[j]=new int[size];		//allocate memory to cost/weight array
+		//cout<<*cost[j]<< " "<<endl;	//what is cost now
+	}
 }
-void Graph::print(bool **g, int **co, int size)
+void Graph::print()
 {
-	ofstream out("random_graph.txt");
+	ofstream out("random_graph.txt");		//print to file
 
 	for(int i=0;i<size;i++ )
 		{
 			for(int j=0;j<size;j++)
 			{
-				if(g[i][j])	//if edge exits here in graph
+				if(graph[i][j])	//if edge exits here in graph
 				{
-					cout<<co[i][j]<< " ";	//print its cost
+					cout<<cost[i][j]<< " ";	//print its cost
 
-					out<< co[i][j]<< " ";
+					out<< cost[i][j]<< " ";
 				}
 			}
 		}
 }
-void Graph::gen_graph(double den, int dist_rng, int size, bool **graph,int ** cost )
+void Graph::gen_graph(double den, int dist_rng)
 {
 
 	//put edges in graph
@@ -52,7 +65,11 @@ void Graph::gen_graph(double den, int dist_rng, int size, bool **graph,int ** co
 			}
 			else
 			{
-				graph[i][j]=graph[j][i]=(prob()<den);	//if probability less than density, put an edge here
+				if (prob()<den)
+				{
+				graph[i][j]=graph[j][i]=true;	//if probability less than density, put an edge here
+				edge++;			//increment edge count
+				}
 			}
 		}
 	}
@@ -69,36 +86,31 @@ void Graph::gen_graph(double den, int dist_rng, int size, bool **graph,int ** co
 	}
 
 }
+bool Graph::adjacent(Graph *g, int x, int y)
+{
+
+	return (true);
+}
 
 int main() {
 
-	Graph g;
+
 		srand(time(0)); //seed random number generator
-		//cout<< prob()<<endl;
 		int size = 15;
 		double density;
 		int range;
 
 		cout << "Enter size of Graph : ";
 		cin >> size;
+		//g.set_V(size);			//set value in graph object
 		cout << "Enter density : ";
 		cin >> density;
 		cout << "Enter max range of Distance (between 1 and 30): ";
 		cin >> range;
+		Graph g(size);
 
-		bool ** graph;
-		int ** cost;
-		graph= new bool*[size];
-		cost= new int*[size];
-		for(int j=0;j<size;j++)
-		{
-			graph[j]=new bool[size];
-			cost[j]=new int[size];
-			// cout<<cost[j]<< " ";	//print its cost
-		}
-
-	g.gen_graph(density,range,size,graph,cost);
-	g.print(graph,cost,size);
+	g.gen_graph(density,range);
+	g.print();
 
 
 
