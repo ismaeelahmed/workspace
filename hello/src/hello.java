@@ -1,6 +1,7 @@
 import java.applet.Applet;
 import java.awt.Graphics;
 
+
 public class hello extends Applet {
 	public void paint (Graphics g){
 		//g.drawString("hello World", getWidth()/2, getHeight()/2);

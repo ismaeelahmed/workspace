@@ -10,28 +10,28 @@ typedef std::string Nodelabel;				//node name
 typedef std::map<Nodelabel, int> Nodelist;	//node and associated edge cost
 typedef std::map<Nodelabel, Nodelist> Graph;//connected nodes form a graph
 typedef std::pair<Nodelabel, Nodelist> Node;//node
-typedef std::pair<int, Nodelabel> Edg;		//edge
+typedef std::pair<int, Nodelabel> Edg;		//edge cost
 
 bool operator>(const Edg r, const Edg k){ return r.first>k.first; }//compare edge cost
 
 void dijkstra(Graph &graph, Nodelabel source, Nodelist &distance){
   distance.clear();
   std::priority_queue<Edg, std::vector<Edg>, std::greater<Edg> > que;
-  que.push(Edg(0, source));
+  que.push(Edg(0, source));		//initial distance from source
 
   while(!que.empty()){
-    Edg tmped=que.top();			//get edge with highest cost
-    Nodelabel tmpnl=tmped.second;	//extract node label
-    que.pop();						//pop it
-    if(distance.count(tmpnl)==0){	//find number of elements with this name(key)
+    Edg tmped=que.top();			//top is edge with minimum cost
+    Nodelabel tmpnl=tmped.second;	//extract name of node (second element in pair)
+    que.pop();						//pop top element (smallest element)
+    if(distance.count(tmpnl)==0){	//if this node is present in list (0 means no)
       int dist=tmped.first;			//note its edge cost
-      distance[tmpnl]=dist;			//save the distance in list
-      Nodelist tempgraph=graph[tmpnl];	//
-      Nodelist::iterator it;
-      for(it=tempgraph.begin(); it!=tempgraph.end(); ++it){
-        int distint=it->second;
+      distance[tmpnl]=dist;			//save distance of this node (from source) in list
+      Nodelist tempgraph=graph[tmpnl];	//add this to tempgraph
+      Nodelist::iterator it;		//create an iterator for list
+      for(it=tempgraph.begin(); it!=tempgraph.end(); ++it){ //iterate through tempgraph
+        int distint=it->second;						//
         Nodelabel distlabel=it->first;
-        que.push(Edg(dist+distint, distlabel));
+        que.push(Edg(dist+distint, distlabel));	//add distance of this node from source, then push
       }
     }
   }
@@ -43,6 +43,10 @@ int main(){
   test["usa"]["kanada"]=14;
   test["usa"]["kuba"]=3;
   test["kuba"]["kanada"]=4;
+
+  Graph::iterator it2;
+  for(it2=test.begin();it2!=test.end();++it2)
+	  std::cout<<"Print graph first:: "<<" "<< it2->first<<" "<<it2->second.begin()->second <<std::endl;
 
   Nodelist strecke;
 
