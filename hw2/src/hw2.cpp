@@ -8,17 +8,25 @@
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
+#include <chrono>
+#include <cassert>
 #include <fstream>
 #include <queue>
 #include <stdlib.h>
+#include <utility>
 #include "Graph.h"
 #include "Path.h"
+
+#define NDEBUG			//for debug info, also disables assert.h
+
 using namespace std;
 
+//calculate probability
 double prob() {
 	return (static_cast<double>(rand()) / RAND_MAX);
 }
-
+//operator for comparison of a link object
+bool operator>(Link & r, Link & k) {return r.cost > k.cost;}
 
 //constructor with size
 Graph::Graph(int sz):edges(sz) {
@@ -30,15 +38,13 @@ Graph::Graph(int sz):edges(sz) {
 	 Adjacency list can also be used in that case however in that case we need to implement it using linked list  ***/
 
 	graph = new bool*[size]; //pointer array pointing to all edges in Graph with 'graph' as base pointer
-	cost = new int*[size]; //pointer array pointing to weight of edges thus graph
+	cost = new double*[size]; //pointer array pointing to weight of edges thus graph
 
 	//list adj_matrix;		//pair of edge cost and if there exits an edge in Graph
 
 	for (int j = 0; j < size; j++) {
 		graph[j] = new bool[size]; //allocate memory for Graph array
-		cost[j] = new int[size]; //allocate memory to cost/weight array
-
-		//cout<<*cost[j]<< " "<<endl;	//what is cost now
+		cost[j] = new double[size]; //allocate memory to cost/weight array
 	}
 }
 void Graph::print() {
@@ -65,11 +71,81 @@ bool Graph::adjacent(int x, int y) {
 					cout << "Edge does not exit between 4 and 5";
 		}
 }
+
+std::vector<Link>	Graph::Dijkstra(int start)
+{
+	std::vector<Link> short_path(get_V());		//vector containing the shortest path, initialized
+
+	std::vector<bool> closed_set(get_V());		//if vertex is in closed set or not(shortest length from source already determined or not)
+	std::vector<int> T;						// names of neighbors/links to current vertex
+	T.reserve(get_V());                                   // Reserve place
+	/*
+	std::priority_queue<Link, std::vector<Link>, std::greater<Link> > queue;		//define queue
+	queue.push(li);
+*/
+	short_path[start]=Link(0,0.0);				//distance of source to itself is zero
+	T.push_back(start);				//put the unvisited node name in vector
+
+	while(!T.empty())
+	{
+		//implement functionality like a priority queue
+		//get the smallest element in the shortest path list
+		int minimum=0;
+		for(std::vector<int>::size_type i=1; i<T.size();++i)
+		{
+			if(short_path[T[i]].cost < short_path[T[minimum]].cost)		//find the smallest element in list
+			{	minimum=i;	}		//make this one minimum
+		}
+
+		std::swap(T[minimum],T.back());		//put minimum at end of list
+		const int tail=T.back();			//assign last element/vertex in T(minimum) to tail
+		T.pop_back();						//remove this from list
+
+		assert(!closed_set[tail]);		//make sure this vertex is not already in closed set
+		closed_set[tail]=true;			//  put it in closed set
+
+		//traverse the adjacency list of this vertex, make a pointer
+		std::vector<Edge>& edge_pt = edges[tail];		//for tail=0 adjacency list would be first row in matrix edges[][]--> e.g.[0 1 3 4 9 0]
+
+		for(std::vector<Edge>::size_type i =0; i<edge_pt.size(); i++)
+		{
+			const Edge&  edge = edge_pt[i];
+			const double cost_temp =edge.cost;
+			const int head = edge.head ;
+
+			if(closed_set[head])		//if this vertex already in closed set quit this iteration and look for next one
+			{
+				continue;
+			}
+
+			const double new_cost = cost_temp + short_path[tail].cost;		//add cost of tail with cost of adjacent vertex = (total cost from source)
+
+			if(short_path[head].ancestor == -1)		//if we have seen this vertex for the first time
+			{
+				T.push_back(head);			//put it in list containing neighbors, it will be processed in next iterations of main loop
+				short_path[head]=Link(tail,new_cost);	//put tail as ancestor of this neighboring vertex and its cost
+			}
+			else
+			{
+				if(new_cost < short_path[head].cost)			//if distance to this node from source is smaller than earlier known distance
+				{
+					short_path[head] = Link(tail,new_cost);	//put tail as ancestor of this neighboring vertex and its cost
+				}
+			}
+		}//end traverse list for
+	}//end T while
+	return short_path;		//return vector containing shortest path
+}
+
 void Graph::gen_graph(double den, int dist_rng) {
 
 	//put edges in graph
+	//when we put j=i+1 that means there will be no link to itself (e.g. 1 1, 3 3)
+	//when we put j=i that means there will be a link to itself
+	//but in that case we make it false here
+
 	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
+		for (int j = i; j < size; j++) {
 			if (i == j) {
 				graph[i][j] = false;
 				//adj_matrix.push_back(std::make_pair(0,graph[i][j]));		//no edge exists
@@ -108,86 +184,68 @@ void Graph::gen_graph(double den, int dist_rng) {
 				<< adj_matrix[i].second.second << "   printing through vector  "
 				<< std::endl;
 	}*/
-	cout<< "number of edges "<<edges.size()<<endl;
-	//const std::vector<std::vector<Edge> >& incident_edges =edges;
-	for (std::vector<std::vector<Edge> >::size_type i = 0; i < edges.size(); ++i) {
-		for (std::vector<Edge>::size_type j = 0; j < edges[i].size(); ++j){
-			//print edge cost from node x to y (cost, x, y)
-		cout << edges[i][j].tail << "," << edges[i][j].head << " "
-							<< edges[i][j].cost << "   printing through vector  "
-							<< std::endl;
-		}
-		}
+	ofstream out("random_graph.txt"); //print to file
+	for (std::vector<std::vector<Edge> >::size_type i = 0; i < edges.size(); ++i)
+	{
+		for (std::vector<Edge>::size_type j = 0; j < edges[i].size(); ++j)
+		{
+		//print edge cost from node x to y (cost, x, y)
+		cout << edges[i][j].tail << "," << edges[i][j].head << " "<< edges[i][j].cost << "  printing through vector"<< std::endl;
+		out << edges[i][j].cost << " "; //output to file
 
+		}
+	}
+
+/*	int i,j;
+	for ( i = 0; i < size; i++){
+			for ( j = i+1 ; j < size; j++){
+				cout <<i << "   " << j << "   ";}
+	cout <<std::endl;
+	}*/
 }
 
 int main() {
 
 	srand(time(0)); //seed random number generator
-	int size = 5;
-	double density=0.1;
-	int range=15;
-
-	//cout << "Enter size of Graph : ";
-	//cin >> size;
-	//g.set_V(size);			//set value in graph object
-	//cout << "Enter density : ";
-	//cin >> density;
-	//cout << "Enter max range of Distance (between 1 and 30): ";
-	//cin >> range;
+	int size = 50;	//graph size
+	double density=0.1;	//density of graph
+	int range=15;		//distance range between nodes
+	int start_vertex=0;	//start node
 	Graph g(size);
 	g.gen_graph(density, range);
 
+#ifdef NDEBUG
+
+	cout << "Debug info :: start time of graph generation ";
+	//const std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+	time_t start,end;
+	time(&start);
+#endif
 	cout << "Number of edges in graph :: " << g.get_E()<<endl;
-	cout << "If there is an Edge between node 4 and 5" << endl;
+	//cout << "If there is an Edge between node 4 and 5" << endl;
 	//Priority Queue
-	g.adjacent(4,5);	//if there exist an edge from node 8 to 9
-	//int PriorityQueue
-	g.print(); //print graph
+	//g.adjacent(4,5);	//if there exist an edge from node 8 to 9
 
-	/*
-	 int size = 15;
-	 double density;
-	 cout << "graph size?" << endl;
-	 cin >> size;
-	 cout << "graph density (0, 1)?" << endl;
-	 cin >> density;
-	 bool** graph;
-	 int** color;
-	 int** cost;
+	//g.print(); //print graph
 
-	 graph = new bool*[size];
-	 color = new int*[size];
-	 cost = new int*[size];
-	 for (int i = 0; i < size; ++i) {
-	 graph[i] = new bool[size];
-	 color[i] = new int[size];
-	 cost[i] = new int[size];
-	 }
-	 for (int i = 0; i < size; ++i) //generate undirected edges
-	 for (int j = i; j < size; ++j)
-	 if (i == j)
-	 graph[i][j] = false; //no loops
-	 else graph[i][j] = graph[j][i] = (prob() < density);
-	 */
+	std::vector<Link> short_path = g.Dijkstra(start_vertex);		//print shortest path using Dijkstra
 
-	/*				for (int i = 0; i < size; ++i) //generate costs and color
-	 for (int j = i; j < size; ++j)
-	 if (graph[i][j]) {
-	 color[i][j] = color[j][i] = rand() % 3;
-	 cost[i][j] = cost[j][i] = prob() * 30;
-	 }
-	 */
-	/*
-	 ofstream outp("graph_data.txt");
-	 outp << size << "\n";
-	 for (int i = 0; i < size; ++i)
-	 for (int j = 0; j < size; ++j) {
-	 if (graph[i][j])
-	 outp << i << '\t' << j << '\t' << cost[i][j] << '\t'
-	 << color[i][j] << '\t';
-	 }
-	 */
-	cout << "!!!Hello World!!!" << endl; // prints !!!Hello World!!!
+	double accumulate=0.0;
+	int count=0;
+	std::vector<Link>& p=short_path;
+	for(std::vector<Link>::size_type i=0; i< p.size();++i)
+	{
+		const double cost = p[i].cost;
+		accumulate+=cost;
+		++count;
+	}
+#ifdef NDEBUG
+	cout << "Debug info :: End time of graph generation ";
+	//const std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+	time(&end);
+	cout << "Debug info :: Total time of graph generation "<< end-start << endl;
+#endif
+	cout << "Average shortest path:: " << accumulate/count << endl;
+
 	return 0;
 }

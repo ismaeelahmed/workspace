@@ -13,9 +13,9 @@
 //contains info about each vertex
 struct Edge
 {
-	Edge(int h, int t,double c):head(h),tail(t),cost(c) {}
-	int head;
+	Edge(int t, int h,double c):tail(t),head(h),cost(c) {}
 	int tail;
+	int head;
 	double cost;
 };
 
@@ -38,6 +38,8 @@ public:
 	{}
 	Graph(int sz);		//constructor with size
 
+	std::vector<Link> Dijkstra(int start) ;		//shortest Path Algorithm, Dijkstra
+
 	void gen_graph(double edg_d, int dist_r);	//function to generate graph
 	void print();								//print graph
 	void set_V(int sz) {size=sz;}				//set graph size
@@ -55,14 +57,13 @@ private:
 	int edge_den, dist_rng;
 
 	bool ** graph;		//edge graph
-	int ** cost;		//cost of edges
+	double ** cost;		//cost of edges
 
 	std::vector<std::vector<Edge> > edges;			//vector containing a vector of edges, head tail and cost
 
 	typedef std::pair<int, std::pair <int, int> > edg;		//edge cost and node name(here name is its location i,j)
 	typedef std::vector<edg> list;			//list of edges in graph
 	list adj_matrix;			//vector containing pair of edge cost and if there exits an edge in Graph
-	typedef std::priority_queue<edg, list, std::greater<edg> > queue;		//define queue
 
 };
 
