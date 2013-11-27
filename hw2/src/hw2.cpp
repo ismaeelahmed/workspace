@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <utility>
 #include "Graph.h"
-#include "Path.h"
 
 #define NDEBUG			//for debug info, also disables assert.h
 
