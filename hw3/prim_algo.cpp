@@ -1,10 +1,10 @@
-//============================================================================
-// Name        : hw2.cpp	//for online course by Ira Pohl "c++ for users of c"
-// Author      : ism
-// Version     :
-// Copyright   : Your copyright notice
-// Description : implementation of Dijkstra's shortest path  algorithm
-//============================================================================
+/*
+ * prim_algo.cpp
+ *
+ *  Created on: Nov 28, 2013
+ *      Author: mavrick
+ */
+
 #include <iostream>
 #include <ctime>
 #include <cstdlib>
@@ -47,6 +47,29 @@ Graph::Graph(int sz):edges(sz) {
 		cost[j] = new double[size]; //allocate memory to cost/weight array
 	}
 }
+
+Graph::Graph(string file) {
+
+	ifstream in(file);							//open file
+	in>>size;									//read size of graph as its the first element
+
+	data.resize(size,vector<int>(size,0));		//resize vector according to graph size and initialize with 0's
+
+	int i,j,cost;		//cost from node i to j
+
+	while (!in.eof())	//read file character by character
+	{
+		in >> i >> j >> cost;		//read from file and write to variables
+		data[i][j]=cost;			//write to vector
+	}
+	for(unsigned int i=0;i<data.size();i++)
+	{
+		for(unsigned int j=1;j<data.size();j++)
+			if(data[i][j] >0 )
+				cout<<i<<" "<<j<<" "<<data[i][j]<<endl;
+	}
+
+}
 void Graph::print() {
 	ofstream out("random_graph.txt"); //print to file
 
@@ -76,11 +99,11 @@ std::vector<Link>	Graph::Dijkstra(int start)
 {
 	std::vector<Link> short_path(get_V());		//vector containing the shortest path, initialized
 
-	std::vector<bool> closed_set(get_V());		//if vertex is in closed set or not(i.e if shortest length from source already determined or not)
-	std::vector<int> T;						// names of neighbors/links of a given vertex
+	std::vector<bool> closed_set(get_V());		//if vertex is in closed set or not(shortest length from source already determined or not)
+	std::vector<int> T;						// names of neighbors/links to current vertex
 	T.reserve(get_V());                                   // Reserve place
 
-	//first tried to use STL priority queue
+	//first tried to use STL priority queue0
 	/*
 	std::priority_queue<Link, std::vector<Link>, std::greater<Link> > queue;		//define queue
 	queue.push(li);
@@ -207,44 +230,38 @@ int main() {
 	double density=0.1;	//density of graph
 	int range=15;		//distance range between nodes
 	int start_vertex=0;	//start node
-	Graph g(size);
-	g.gen_graph(density, range);
+
+	//Graph g(size);
+	//g.gen_graph(density, range);	//generate graph, this should be done in constructor
+	//std::cout<<"12222222222222222222222222222222222222222222222222222222222222222222222222222222222222222";
+	Graph mst("HW3_sample_data");
+
 
 #ifdef NDEBUG
 
 	const std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
-	//const std::chrono::duration<double> st=start;
-	//auto time_point =std::chrono::system_clock::now();	//same as system_clock::time_point time_point;
-	//const std::chrono::duration<double> ct=start;
-
 
 //	std::time_t now_c = std::chrono::system_clock::to_time_t(time_point);
 //cout<<"Start time::"<<std::ctime(&now_c)<<endl;
 //cout << "Debug info :: start time of graph generation "<<start.;
 
 #endif
-	cout << "Number of edges in graph :: " << g.get_E()<<endl;
 
-	std::vector<Link> short_path = g.Dijkstra(start_vertex);		//print shortest path using Dijkstra
+	//std::vector<Link> mst = g.Dijkstra(start_vertex);		//print shortest path using Dijkstra
 
-	double accumulate=0.0;
-	int count=0;
-	std::vector<Link>& p=short_path;
-	for(std::vector<Link>::size_type i=0; i< p.size();++i)
-	{
-		const double cost = p[i].cost;
-		accumulate+=cost;
-		++count;
-	}
+
 #ifdef NDEBUG
 	cout << "Debug info :: End time of graph generation "<<endl;
 	const std::chrono::time_point<std::chrono::system_clock> stop = std::chrono::system_clock::now();
-	        const std::chrono::duration<double> duration = stop - start;
-	        const double total = duration.count();
-	       // const double individual = total / no_iterations;
+	const std::chrono::duration<double> duration = stop - start;
+	const double total = duration.count();
+	// const double individual = total / no_iterations;
 	cout << "Debug info :: Total time of graph generation "<< total<< endl;
 #endif
-	cout << "Average shortest path:: " << accumulate/count << endl;
+
 
 	return 0;
 }
+
+
+
