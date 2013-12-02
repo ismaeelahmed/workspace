@@ -41,7 +41,7 @@ public:
 	Graph(std::string s);		//constructor that reads from a file
 
 	std::vector<Link> Dijkstra(int start) ;		//shortest Path Algorithm, Dijkstra
-	std::vector<Link> Prim_mst(int start) ;		//Minimum Spanning Tree Algorithm, Prim
+	std::pair<int, Graph> Prim_mst(int start) ;		//Minimum Spanning Tree Algorithm, Prim
 
 	void gen_graph(double edg_d, int dist_r);	//function to generate graph
 	void print();								//print graph
@@ -49,9 +49,10 @@ public:
 	int get_V() {return size;}					//return number of vertices
 	int get_E() {return edge;}					//return number of edges
 	bool adjacent(int x, int y);		//tests whether there is an edge from node x to node y
-	int neighbour(Graph *, int x);				// lists all nodes y such that there is an edge from x to y
-	int get_node_value(Graph *,int x);			// returns the value associated with the node x
-	int get_edge_value( Graph *,int x,int y);	// returns the value/cost associated to the edge (x,y)
+	std::vector<int> neighbours(int x);				// lists all nodes y such that there is an edge from x to y
+	void add_edge(int src,int dst, double cost);		//edge from source to destination and its cost
+	int get_node_value(int x);			// returns the value associated with the node x
+	double get_edge_value(int x,int y);	// returns the value/cost associated with edge from x to y
 
 
 private:
@@ -66,9 +67,6 @@ private:
 
 	std::vector<std::vector<Edge> > edges;			//vector containing a vector of edges, head tail and cost
 
-	typedef std::pair<int, std::pair <int, int> > edg;		//edge cost and node name(here name is its location i,j)
-	typedef std::vector<edg> list;			//list of edges in graph
-	list adj_matrix;			//vector containing pair of edge cost and if there exits an edge in Graph
 
 };
 
