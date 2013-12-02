@@ -78,7 +78,7 @@ void Graph::print()
 		for(int j=i;j<size;j++)
 		{
 			if(data[i][j]>0)
-				cout<<i<<" "<<j<<" "<<data[i][j]<<endl;
+				cout<<i<<'\t'<<j<<'\t'<<data[i][j]<<endl;
 		}
 	}
 }
@@ -111,23 +111,23 @@ std::pair<int,Graph> Graph::Prim_mst(int start)		//Minimum Spanning Tree Algorit
 	std::vector<int>	min_dist(get_V(),INT_MAX);		//array to hold minimum distance of nodes from mst
 
 	Graph tree = Graph(get_V());		//create a graph to hold minimum spanning tree
-	min_dist[start] = 0;	//start node has zero distance from itself
-	is_present_mst[0]=true;
+	min_dist[start] = 0;		//start node has zero distance from itself
+	is_present_mst[0]=true;		//put start node in mst
 	int cost =0;		//total length of mst
+
 	//get neighbors of source in a separate for loop
 	for(unsigned int i=1 ;i <= neighbours(0).size();i++)	//or for loop with range "int i: get_neighbors(0)" can be used
 	{
 		min_dist[i]= get_edge_value(0,i);		//get values already stored in our graph container, namely data[][]
-		//cout<<" "<<min_dist[i];
 	}
-		//now get the node with minimum distance in all nodes (functionality of a priority queue)
+		//now get the node with minimum distance in all other nodes (functionality of a priority queue)
 		for(int i=0; i<size;i++)
 		{
 			int index;
 			int min_dis = INT_MAX;
 			for(int j=0; j<size;j++)
 			{
-				if(!is_present_mst[j] && min_dist[j] < min_dis)
+				if(!is_present_mst[j] && min_dist[j] < min_dis)	//if in this row, the minimum distance is less than previously stored
 				{
 					index=j;	//index would be the node with minimum distance from source
 					min_dis=min_dist[j];
@@ -154,9 +154,9 @@ std::pair<int,Graph> Graph::Prim_mst(int start)		//Minimum Spanning Tree Algorit
 				{
 					min_dist[i]=get_edge_value(i,index);		//update min distance for this node
 				}
-			}
-		}
-	std::pair<int,Graph> result(cost,tree);
+			}//end for --dist update
+		}//end for-- minimum
+	std::pair<int,Graph> result(cost,tree);		//retrn
 	return result;
 }
 
@@ -172,7 +172,8 @@ int main() {
 
 	std::pair<int, Graph> tree = mst.Prim_mst(0);		//print shortest path using Dijkstra
 	cout << "Cost of Graph:: "<< tree.first	<< endl;
-	tree.second.print();
+	cout << "Minimum Spanning Tree print format <vertex vertex cost> "<<endl;
+	tree.second.print();			//print mst
 
 #ifdef NDEBUG
 	cout << "Debug info :: End time of graph generation "<<endl;
@@ -184,6 +185,3 @@ int main() {
 
 return 0;
 }
-
-
-
